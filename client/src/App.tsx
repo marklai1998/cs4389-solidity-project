@@ -1,33 +1,55 @@
 import React from 'react'
 import 'antd/dist/antd.dark.css'
 import { useWeb3, UseWeb3Provider } from './hooks/useWeb3'
-import { Button } from 'antd'
-import {
-  useSimpleStorage,
-  UseSimpleStorageProvider,
-} from './hooks/useSimpleStorage'
+
 import { Loading } from './components/Loading'
+import styled from 'styled-components'
+import background from './assets/background.jpg'
+import { Header } from './containers/Header'
+import { Drawer } from './containers/Drawer'
+import { Calendar } from './containers/Calendar'
 
 const App = () => {
   const { web3, accounts } = useWeb3()
-  const { storageValue, runExample } = useSimpleStorage()
 
   const loading = !web3 || !accounts
-  return loading ? (
-    <Loading />
-  ) : (
-    <>
-      <Button onClick={runExample}>
-        {storageValue || 'click to set storage value'}
-      </Button>
-    </>
+  return (
+    <Wrapper>
+      {loading ? (
+        <Loading />
+      ) : (
+        <>
+          <Header />
+          <Column>
+            <Drawer />
+            <Calendar />
+          </Column>
+        </>
+      )}
+    </Wrapper>
   )
 }
 
 export default () => (
   <UseWeb3Provider>
-    <UseSimpleStorageProvider>
-      <App />
-    </UseSimpleStorageProvider>
+    <App />
   </UseWeb3Provider>
 )
+
+const Wrapper = styled.div`
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  background: url(${background});
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+`
+
+const Column = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+`
