@@ -12,14 +12,15 @@ const App = () => {
   const { web3, accounts } = useWeb3()
   const { storageValue, runExample } = useSimpleStorage()
 
-  return web3 && accounts ? (
+  const loading = !web3 || !accounts
+  return loading ? (
+    <Loading />
+  ) : (
     <>
       <Button onClick={runExample}>
         {storageValue || 'click to set storage value'}
       </Button>
     </>
-  ) : (
-    <Loading />
   )
 }
 
