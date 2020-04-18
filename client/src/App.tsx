@@ -1,6 +1,6 @@
 import React from 'react'
 import SimpleStorageContract from './contracts/SimpleStorage.json'
-import getWeb3 from './getWeb3'
+import getWeb3 from './utils/getWeb3'
 import { AbiItem } from 'web3-utils'
 import { Contract } from 'web3-eth-contract'
 
