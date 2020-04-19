@@ -16,22 +16,22 @@ export const Header = () => (
 )
 
 const Wrapper = styled.div`
-  height: 48px;
+  height: 40px;
   background-color: rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(5px);
   padding: 0 16px;
-  line-height: 48px;
+  line-height: 40px;
   display: flex;
   justify-content: space-between;
 `
 
 const Icon = styled(CalendarOutlined)`
-  font-size: 25px;
+  font-size: 20px;
   padding: 12px 0;
 `
 
 const Name = styled.span`
-  font-size: 24px;
+  font-size: 20px;
   margin-left: 8px;
 `
 

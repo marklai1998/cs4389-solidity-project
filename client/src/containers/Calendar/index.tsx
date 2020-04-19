@@ -1,7 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Button, Calendar as AntdCalendar } from 'antd'
-import { PlusOutlined } from '@ant-design/icons'
+import { Calendar as AntdCalendar } from 'antd'
 import { Scrollbars } from 'react-custom-scrollbars'
 import moment from 'moment'
 import { useEvent } from '../../hooks/useEvent'
