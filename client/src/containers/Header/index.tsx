@@ -3,19 +3,17 @@ import styled from 'styled-components'
 import { CalendarOutlined } from '@ant-design/icons'
 import { AccountSelector } from './AccountSelector'
 
-export const Header = () => {
-  return (
-    <Wrapper>
-      <LogoWrapper>
-        <Icon />
-        <Name>Ethent</Name>
-      </LogoWrapper>
-      <AccountSelectorWrapper>
-        <AccountSelector />
-      </AccountSelectorWrapper>
-    </Wrapper>
-  )
-}
+export const Header = () => (
+  <Wrapper>
+    <LogoWrapper>
+      <Icon />
+      <Name>Ethent</Name>
+    </LogoWrapper>
+    <AccountSelectorWrapper>
+      <AccountSelector />
+    </AccountSelectorWrapper>
+  </Wrapper>
+)
 
 const Wrapper = styled.div`
   height: 48px;

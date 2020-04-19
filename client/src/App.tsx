@@ -8,6 +8,7 @@ import background from './assets/background.jpg'
 import { Header } from './containers/Header'
 import { Drawer } from './containers/Drawer'
 import { Calendar } from './containers/Calendar'
+import { UseEventProvider } from './hooks/useEvent'
 
 const App = () => {
   const { web3, accounts } = useWeb3()
@@ -33,7 +34,9 @@ const App = () => {
 
 export default () => (
   <UseWeb3Provider>
-    <App />
+    <UseEventProvider>
+      <App />
+    </UseEventProvider>
   </UseWeb3Provider>
 )
 

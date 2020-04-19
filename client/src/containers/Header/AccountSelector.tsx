@@ -18,6 +18,7 @@ export const AccountSelector = () => {
                   setSelectedAccount(account)
                 }}
                 disabled={selectedAccount === account}
+                key={account}
               >
                 {account}
               </Menu.Item>
