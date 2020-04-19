@@ -1,28 +1,42 @@
 import React from 'react'
-import { Event } from '../../hooks/useEvent'
+import { Event, useEvent } from '../../hooks/useEvent'
 import styled from 'styled-components'
 import moment from 'moment'
 import { CalendarOutlined, UserOutlined } from '@ant-design/icons'
 
-export const Item = ({ name, startDate, joined }: Event) => (
-  <Wrapper>
-    <Name>{name}</Name>
-    <DetailWrapper>
-      <div>
-        <CalendarOutlined /> {moment(startDate).fromNow()}
-      </div>
-      <div>
-        <UserOutlined /> {joined.length}
-      </div>
-    </DetailWrapper>
-  </Wrapper>
-)
+export const Item = ({ name, startDate, joined, id }: Event) => {
+  const { viewEvent } = useEvent()
+
+  return (
+    <Wrapper
+      onClick={() => {
+        viewEvent(id)
+      }}
+    >
+      <Name>{name}</Name>
+      <DetailWrapper>
+        <div>
+          <CalendarOutlined /> {moment(startDate).fromNow()}
+        </div>
+        <div>
+          <UserOutlined /> {joined.length}
+        </div>
+      </DetailWrapper>
+    </Wrapper>
+  )
+}
 
 const Wrapper = styled.div`
   background-color: #242426;
   border-radius: 2px;
   margin: 4px 0;
   padding: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+
+  &:hover {
+    background-color: #353537;
+  }
 `
 
 const Name = styled.div`

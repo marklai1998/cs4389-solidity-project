@@ -9,6 +9,7 @@ import { Header } from './containers/Header'
 import { Drawer } from './containers/Drawer'
 import { Calendar } from './containers/Calendar'
 import { UseEventProvider } from './hooks/useEvent'
+import { ViewEventModal } from './containers/ViewEventModal'
 
 const App = () => {
   const { web3, accounts } = useWeb3()
@@ -21,6 +22,7 @@ const App = () => {
         <Loading />
       ) : (
         <>
+          <ViewEventModal />
           <Header />
           <Column>
             <Drawer />

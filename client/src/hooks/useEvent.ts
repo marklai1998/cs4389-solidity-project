@@ -4,6 +4,7 @@ import constate from 'constate'
 import { useInterval } from 'react-use'
 import moment from 'moment'
 import { v4 as uuid } from 'uuid'
+import * as R from 'ramda'
 
 export type Event = {
   id: string
@@ -156,6 +157,7 @@ const MockedData: Event[] = [
 export const [UseEventProvider, useEvent] = constate(() => {
   // const { web3 } = useWeb3()
   const [events, setEvents] = useState<Event[]>([])
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
 
   const refreshEvents = async () => {
     // TODO: get all event from contract
@@ -165,6 +167,24 @@ export const [UseEventProvider, useEvent] = constate(() => {
   const createEvent = (event: Event) => {
     console.log(event)
     // TODO: save event
+  }
+
+  const viewEvent = (id: string) => {
+    // TODO: save event
+    const result = R.find(R.propEq('id', id), events)
+    if (!result) return
+    setSelectedEvent(result)
+  }
+
+  const joinEvent = (id: string) => {
+    // TODO: save event
+    const result = R.find(R.propEq('id', id), events)
+    if (!result) return
+    setSelectedEvent(result)
+  }
+
+  const resetSelectedEvent = () => {
+    setSelectedEvent(null)
   }
 
   useInterval(
@@ -178,5 +198,12 @@ export const [UseEventProvider, useEvent] = constate(() => {
     refreshEvents()
   }, [])
 
-  return { events, createEvent }
+  return {
+    events,
+    createEvent,
+    viewEvent,
+    selectedEvent,
+    resetSelectedEvent,
+    joinEvent,
+  }
 })
