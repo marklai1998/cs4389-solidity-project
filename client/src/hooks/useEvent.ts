@@ -9,10 +9,20 @@ export type Event = {
   id: string
   name: string
   description: string
-  start: string
-  end: string
+  startDate: string
+  endDate: string
+  dueDate: string
   organizer: string
-  joined: string[]
+  headcount: number
+  fee: number
+  joined: Attendee[]
+}
+
+export type Attendee = {
+  account: string
+  firstName: string
+  lastName: string
+  email: string
 }
 
 const MockedData: Event[] = [
@@ -20,91 +30,126 @@ const MockedData: Event[] = [
     id: uuid(),
     name: 'test event1',
     description: '',
-    start: moment().add('day', 1).toISOString(),
-    end: moment().add('day', 1).toISOString(),
+    startDate: moment().add('day', 1).toISOString(),
+    endDate: moment().add('day', 1).toISOString(),
+    dueDate: moment().add('day', 1).toISOString(),
     organizer: 'someAddress',
-    joined: ['someAddress1', 'someAddress2'],
-  },
-  {
-    id: uuid(),
-    name: 'test event1 but the name is too long',
-    description: '',
-    start: moment().set('year', 2022).toISOString(),
-    end: moment().set('year', 2022).toISOString(),
-    organizer: 'someAddress',
-    joined: ['someAddress1', 'someAddress2'],
-  },
-  {
-    id: uuid(),
-    name: 'test event1',
-    description: '',
-    start: moment().set('year', 2021).toISOString(),
-    end: moment().set('year', 2021).toISOString(),
-    organizer: 'someAddress',
-    joined: ['someAddress1', 'someAddress2'],
-  },
-  {
-    id: uuid(),
-    name: 'test event1',
-    description: '',
-    start: moment().set('year', 2021).toISOString(),
-    end: moment().set('year', 2021).toISOString(),
-    organizer: 'someAddress',
-    joined: ['someAddress1', 'someAddress2'],
+    headcount: 10,
+    fee: 10,
+    joined: [
+      {
+        account: 'someAddress',
+        firstName: 'mark',
+        lastName: 'lai',
+        email: 'a@a.com',
+      },
+      {
+        account: 'someAddress',
+        firstName: 'ivan',
+        lastName: 'Lau',
+        email: 'a@a.com',
+      },
+    ],
   },
   {
     id: uuid(),
     name: 'test event1',
     description: '',
-    start: moment().set('year', 2022).toISOString(),
-    end: moment().set('year', 2022).toISOString(),
+    startDate: moment().add('day', 1).toISOString(),
+    endDate: moment().add('day', 1).toISOString(),
+    dueDate: moment().add('day', 1).toISOString(),
     organizer: 'someAddress',
-    joined: ['someAddress1', 'someAddress2'],
+    headcount: 10,
+    fee: 10,
+    joined: [
+      {
+        account: 'someAddress',
+        firstName: 'mark',
+        lastName: 'lai',
+        email: 'a@a.com',
+      },
+      {
+        account: 'someAddress',
+        firstName: 'ivan',
+        lastName: 'Lau',
+        email: 'a@a.com',
+      },
+    ],
   },
   {
     id: uuid(),
     name: 'test event1',
     description: '',
-    start: moment().set('year', 2022).toISOString(),
-    end: moment().set('year', 2022).toISOString(),
+    startDate: moment().add('day', 1).toISOString(),
+    endDate: moment().add('day', 1).toISOString(),
+    dueDate: moment().add('day', 1).toISOString(),
     organizer: 'someAddress',
-    joined: ['someAddress1', 'someAddress2'],
+    headcount: 10,
+    fee: 10,
+    joined: [
+      {
+        account: 'someAddress',
+        firstName: 'mark',
+        lastName: 'lai',
+        email: 'a@a.com',
+      },
+      {
+        account: 'someAddress',
+        firstName: 'ivan',
+        lastName: 'Lau',
+        email: 'a@a.com',
+      },
+    ],
   },
   {
     id: uuid(),
     name: 'test event1',
     description: '',
-    start: moment().set('year', 2022).toISOString(),
-    end: moment().set('year', 2022).toISOString(),
+    startDate: moment().add('day', 1).toISOString(),
+    endDate: moment().add('day', 1).toISOString(),
+    dueDate: moment().add('day', 1).toISOString(),
     organizer: 'someAddress',
-    joined: ['someAddress1', 'someAddress2'],
+    headcount: 10,
+    fee: 10,
+    joined: [
+      {
+        account: 'someAddress',
+        firstName: 'mark',
+        lastName: 'lai',
+        email: 'a@a.com',
+      },
+      {
+        account: 'someAddress',
+        firstName: 'ivan',
+        lastName: 'Lau',
+        email: 'a@a.com',
+      },
+    ],
   },
   {
     id: uuid(),
     name: 'test event1',
     description: '',
-    start: moment().set('year', 2022).toISOString(),
-    end: moment().set('year', 2022).toISOString(),
+    startDate: moment().add('day', 1).toISOString(),
+    endDate: moment().add('day', 1).toISOString(),
+    dueDate: moment().add('day', 1).toISOString(),
     organizer: 'someAddress',
-    joined: ['someAddress1', 'someAddress2'],
-  },
-  {
-    id: uuid(),
-    name: 'test event1',
-    description: '',
-    start: moment().set('year', 2022).toISOString(),
-    end: moment().set('year', 2022).toISOString(),
-    organizer: 'someAddress',
-    joined: ['someAddress1', 'someAddress2'],
-  },
-  {
-    id: uuid(),
-    name: 'test event1',
-    description: '',
-    start: moment().set('year', 2022).toISOString(),
-    end: moment().set('year', 2022).toISOString(),
-    organizer: 'someAddress',
-    joined: ['someAddress1', 'someAddress2'],
+    headcount: 10,
+    fee: 10,
+    joined: [
+      {
+        account: 'someAddress',
+        firstName: 'mark',
+        lastName: 'lai',
+        email: 'a@a.com',
+      },
+      {
+        account: 'someAddress',
+        firstName: 'ivan',
+        lastName: 'Lau',
+        email: 'a@a.com',
+      },
+    ],
   },
 ]
 

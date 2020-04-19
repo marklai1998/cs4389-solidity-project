@@ -18,7 +18,7 @@ export const Drawer = () => {
   const [sortBy, setSortBy] = useState(sortType.ASC)
 
   const sortedEvents = R.compose<Event[], Event[], Event[]>(
-    R.sort(({ start: startA }, { start: startB }) => {
+    R.sort(({ startDate: startA }, { startDate: startB }) => {
       const momentA = moment(startA)
       const result =
         sortBy === sortType.ASC
@@ -27,7 +27,7 @@ export const Drawer = () => {
 
       return result ? 1 : -1
     }),
-    R.reject(({ end }) => moment(end).isBefore(moment()))
+    R.reject(({ endDate }) => moment(endDate).isBefore(moment()))
   )(events)
 
   return (

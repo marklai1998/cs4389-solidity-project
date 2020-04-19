@@ -11,9 +11,9 @@ export const Calendar = () => {
   const { events } = useEvent()
 
   const dateCellRender = (value: moment.Moment) => {
-    const items = R.filter(({ start, end }) => {
-      const startMoment = moment(start)
-      const endMoment = moment(end)
+    const items = R.filter(({ startDate, endDate }) => {
+      const startMoment = moment(startDate)
+      const endMoment = moment(endDate)
       const year = value.year()
       const dayOfYear = value.dayOfYear()
       return (

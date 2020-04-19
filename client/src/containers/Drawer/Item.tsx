@@ -4,12 +4,12 @@ import styled from 'styled-components'
 import moment from 'moment'
 import { CalendarOutlined, UserOutlined } from '@ant-design/icons'
 
-export const Item = ({ name, start, joined }: Event) => (
+export const Item = ({ name, startDate, joined }: Event) => (
   <Wrapper>
     <Name>{name}</Name>
     <DetailWrapper>
       <div>
-        <CalendarOutlined /> {moment(start).fromNow()}
+        <CalendarOutlined /> {moment(startDate).fromNow()}
       </div>
       <div>
         <UserOutlined /> {joined.length}
