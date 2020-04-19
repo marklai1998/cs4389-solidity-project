@@ -2,10 +2,12 @@ import constate from 'constate'
 import { useState, useEffect } from 'react'
 import Web3 from 'web3'
 import getWeb3 from '../utils/getWeb3'
+import * as R from 'ramda'
 
 export const [UseWeb3Provider, useWeb3] = constate(() => {
   const [web3Instance, setWeb3Instance] = useState<Web3 | null>(null)
   const [accounts, setAccounts] = useState<string[] | null>(null)
+  const [selectedAccount, setSelectedAccount] = useState<string | null>(null)
 
   useEffect(() => {
     const initWeb3 = async () => {
@@ -34,5 +36,25 @@ export const [UseWeb3Provider, useWeb3] = constate(() => {
     initAccount()
   }, [web3Instance])
 
-  return { web3: web3Instance, accounts }
+  useEffect(() => {
+    if (!accounts) {
+      setSelectedAccount(null)
+      return
+    }
+    if (!selectedAccount || !R.contains(selectedAccount, accounts)) {
+      const account = R.head(accounts)
+      if (!account) {
+        setSelectedAccount(null)
+        return
+      }
+      setSelectedAccount(account)
+    }
+  }, [accounts, selectedAccount])
+
+  return {
+    web3: web3Instance,
+    accounts,
+    selectedAccount,
+    setSelectedAccount,
+  }
 })

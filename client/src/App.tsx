@@ -3,7 +3,7 @@ import 'antd/dist/antd.dark.css'
 import { useWeb3, UseWeb3Provider } from './hooks/useWeb3'
 
 import { Loading } from './components/Loading'
-import styled from 'styled-components'
+import styled, { createGlobalStyle } from 'styled-components'
 import background from './assets/background.jpg'
 import { Header } from './containers/Header'
 import { Drawer } from './containers/Drawer'
@@ -15,6 +15,7 @@ const App = () => {
   const loading = !web3 || !accounts
   return (
     <Wrapper>
+      <GlobalStyle />
       {loading ? (
         <Loading />
       ) : (
@@ -52,4 +53,10 @@ const Column = styled.div`
   width: 100%;
   height: 100%;
   display: flex;
+`
+
+const GlobalStyle = createGlobalStyle`
+  body {
+    font-family: 'Rajdhani', sans-serif;
+  }
 `
