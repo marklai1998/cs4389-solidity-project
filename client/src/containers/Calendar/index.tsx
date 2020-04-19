@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Calendar as AntdCalendar } from 'antd'
+import { Calendar as AntdCalendar, Dropdown, Menu } from 'antd'
 import { Scrollbars } from 'react-custom-scrollbars'
 import moment from 'moment'
 import { useEvent } from '../../hooks/useEvent'
@@ -8,7 +8,7 @@ import * as R from 'ramda'
 import { CreateEventModal } from '../CreateEventModal'
 
 export const Calendar = () => {
-  const { events } = useEvent()
+  const { events, viewEvent } = useEvent()
 
   const dateCellRender = (value: moment.Moment) => {
     const items = R.filter(({ startDate, endDate }) => {
@@ -23,12 +23,29 @@ export const Calendar = () => {
         endMoment.year() >= year
       )
     }, events)
-    return (
-      <>
-        {items.map(({ id, name }) => (
-          <EventItem key={id}>{name}</EventItem>
-        ))}
-      </>
+    return R.isEmpty(items) ? (
+      <></>
+    ) : (
+      <Dropdown
+        overlay={
+          <Menu>
+            {items.map(({ name, id }) => (
+              <Menu.Item
+                key={id}
+                onClick={() => {
+                  viewEvent(id)
+                }}
+              >
+                {name}
+              </Menu.Item>
+            ))}
+          </Menu>
+        }
+      >
+        <CalendarItem>
+          {items.length} {`Event${items.length > 1 ? 's' : ''}`}
+        </CalendarItem>
+      </Dropdown>
     )
   }
 
@@ -80,10 +97,7 @@ const CalendarWrapper = styled.div`
   }
 `
 
-const EventItem = styled.div`
-  font-size: 12px;
+const CalendarItem = styled.div`
   width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  height: 100%;
 `
