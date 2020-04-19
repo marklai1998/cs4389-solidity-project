@@ -162,6 +162,11 @@ export const [UseEventProvider, useEvent] = constate(() => {
     setEvents(MockedData)
   }
 
+  const createEvent = (event: Event) => {
+    console.log(event)
+    // TODO: save event
+  }
+
   useInterval(
     () => {
       refreshEvents()
@@ -173,5 +178,5 @@ export const [UseEventProvider, useEvent] = constate(() => {
     refreshEvents()
   }, [])
 
-  return { events }
+  return { events, createEvent }
 })

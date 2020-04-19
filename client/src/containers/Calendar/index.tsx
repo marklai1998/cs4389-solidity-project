@@ -6,6 +6,7 @@ import { Scrollbars } from 'react-custom-scrollbars'
 import moment from 'moment'
 import { useEvent } from '../../hooks/useEvent'
 import * as R from 'ramda'
+import { CreateEventModal } from '../CreateEventModal'
 
 export const Calendar = () => {
   const { events } = useEvent()
@@ -36,9 +37,7 @@ export const Calendar = () => {
     <Wrapper>
       <NameWrapper>
         <h2>Calendar</h2>
-        <Button icon={<PlusOutlined />} type='primary'>
-          Create Event
-        </Button>
+        <CreateEventModal />
       </NameWrapper>
       <CalendarWrapper>
         <Scrollbars universal>
