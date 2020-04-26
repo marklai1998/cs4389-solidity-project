@@ -91,17 +91,25 @@ contract EventManager {
         return EventAttendee[_id].length;
     }
 
-    function getIsInTheEventById(string memory _eventId)
+    function getIsInTheEvent(string memory _eventId, address user)
         public
         view
         returns (bool)
     {
         for (uint256 i = 0; i < EventAttendee[_eventId].length; i++) {
-            if (EventAttendee[_eventId][i].buyer == msg.sender) {
+            if (EventAttendee[_eventId][i].buyer == user) {
                 return true;
             }
         }
         return false;
+    }
+
+    function getIsInTheEventById(string memory _eventId)
+        public
+        view
+        returns (bool)
+    {
+        return getIsInTheEvent(_eventId, msg.sender);
     }
 
     function getEventAttendeesById(string memory _eventId)
@@ -174,6 +182,7 @@ contract EventManager {
         string memory _lastName,
         string memory _email
     ) public payable returns (bool) {
+        require(!getIsInTheEvent(_eventId, msg.sender), "already in the event");
         require(!getEventClaimedById(_eventId), "event is locked");
         require(msg.value == getEventFeeById(_eventId), "fee not enough");
         require(subHeadcount(_eventId), "headcount not enough");
@@ -189,6 +198,7 @@ contract EventManager {
     }
 
     function leaveEvent(string memory _eventId) public payable returns (bool) {
+        require(getIsInTheEvent(_eventId, msg.sender), "not in the event");
         require(!getEventClaimedById(_eventId), "event is locked");
 
         for (uint256 i = 0; i < EventAttendee[_eventId].length; i++) {
