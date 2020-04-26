@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Modal, Button, message } from 'antd'
+import { Modal, Button, message, Divider } from 'antd'
 import { useEvent, EventListItem } from '../../hooks/useEvent'
 
 import * as R from 'ramda'
@@ -7,6 +7,8 @@ import moment from 'moment'
 import { useInterval } from 'react-use'
 import { JoinEventModal, HandleJoinCallback } from './JoinEventModal'
 import { useWeb3 } from '../../hooks/useWeb3'
+import { Attendee } from '../../types/Attendee'
+import styled from 'styled-components'
 
 export const ViewEventModal = () => {
   const { selectedAccount } = useWeb3()
@@ -17,15 +19,22 @@ export const ViewEventModal = () => {
     joinEvent,
     claimEvent,
     leaveEvent,
+    getEventAttendeeList,
   } = useEvent()
 
   const [eventDetail, setEventDetail] = useState<EventListItem | null>(null)
+  const [attendeeList, setAttendeeList] = useState<Attendee[]>([])
   const [joinEventModalVisible, setJoinEventModalVisible] = useState(false)
 
   const refreshEventDetail = async () => {
     if (!selectedEventId) return
     const result = await getEvent(selectedEventId)
     setEventDetail(result)
+
+    if (result && result.event.organizer === selectedAccount) {
+      const result = await getEventAttendeeList(selectedEventId)
+      setAttendeeList(result)
+    }
   }
 
   useInterval(
@@ -38,14 +47,16 @@ export const ViewEventModal = () => {
       refreshEventDetail()
     } else {
       setEventDetail(null)
+      setAttendeeList([])
     }
     return () => {
       setEventDetail(null)
+      setAttendeeList([])
     }
   }, [selectedEventId])
 
   if (!selectedEventId || !eventDetail) return <></>
-  const { event, attendees } = eventDetail
+  const { event, attendees, isInTheEvent } = eventDetail
 
   const handleJoinEvent: HandleJoinCallback = ({
     firstName,
@@ -116,11 +127,6 @@ export const ViewEventModal = () => {
   const isOwner = event.organizer === selectedAccount
   const canClaim = isOwner && !event.claimed
 
-  const isInTheEvent = R.any(
-    ({ buyer }) => buyer === selectedAccount,
-    attendees
-  )
-
   const isLocked = event.claimed
   const isDue = moment(event.dueDate).isSameOrBefore(moment())
   const isEnd = moment(event.startDate).isSameOrBefore(moment())
@@ -184,8 +190,26 @@ export const ViewEventModal = () => {
         <h2>Fee</h2>
         {event.fee} Wei
         <h2>Joined</h2>
-        {attendees.length}
+        {attendees}
+        {!R.isEmpty(attendeeList) && (
+          <>
+            <Divider />
+            <h2>Attendee List</h2>
+            {attendeeList.map(({ buyer, firstName, lastName, email }) => (
+              <AttendeeItem>
+                <div>Address: {buyer}</div>
+                <div>First Name: {firstName}</div>
+                <div>Last Name: {lastName}</div>
+                <div>Email: {email}</div>
+              </AttendeeItem>
+            ))}
+          </>
+        )}
       </Modal>
     </>
   )
 }
+
+const AttendeeItem = styled.div`
+  margin-bottom: 8px;
+`

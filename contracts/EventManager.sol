@@ -83,12 +83,37 @@ contract EventManager {
         return EventLists;
     }
 
-    function getEventAttendeesById(string memory _id)
+    function getEventAttendeesCountById(string memory _id)
+        public
+        view
+        returns (uint256)
+    {
+        return EventAttendee[_id].length;
+    }
+
+    function getIsInTheEventById(string memory _eventId)
+        public
+        view
+        returns (bool)
+    {
+        for (uint256 i = 0; i < EventAttendee[_eventId].length; i++) {
+            if (EventAttendee[_eventId][i].buyer == msg.sender) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function getEventAttendeesById(string memory _eventId)
         public
         view
         returns (Attendee[] memory)
     {
-        return EventAttendee[_id];
+        require(
+            getEventOwnerById(_eventId) == msg.sender,
+            "you are not the event owner"
+        );
+        return EventAttendee[_eventId];
     }
 
     function getEventFeeById(string memory _id) public view returns (uint256) {
@@ -208,7 +233,6 @@ contract EventManager {
     }
 
     function claimEvent(string memory _eventId) public payable returns (bool) {
-        //EventManager EM = EventManager(Eventaddr);
         require(
             getEventOwnerById(_eventId) == msg.sender,
             "you are not the event owner"

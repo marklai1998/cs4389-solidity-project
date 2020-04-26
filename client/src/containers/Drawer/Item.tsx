@@ -22,7 +22,7 @@ export const Item = ({
           <CalendarOutlined /> {moment(startDate).fromNow()}
         </div>
         <div>
-          <UserOutlined /> {attendees.length}
+          <UserOutlined /> {attendees}
         </div>
       </DetailWrapper>
     </Wrapper>

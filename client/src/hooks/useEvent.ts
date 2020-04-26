@@ -29,7 +29,11 @@ const parseAttendee = (item: any): Attendee => ({
   email: R.prop('email', item),
 })
 
-export type EventListItem = { event: Event; attendees: Attendee[] }
+export type EventListItem = {
+  event: Event
+  attendees: number
+  isInTheEvent: boolean
+}
 
 export const [UseEventProvider, useEvent] = constate(() => {
   const { web3, accounts, selectedAccount } = useWeb3()
@@ -41,13 +45,29 @@ export const [UseEventProvider, useEvent] = constate(() => {
   const [events, setEvents] = useState<EventListItem[]>([])
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
 
-  const getEventAttendees = async (id: string): Promise<Attendee[]> => {
+  const getEventAttendeeCount = async (id: string): Promise<number> => {
+    if (!accounts || !eventManagerContract) return 0
+    const result = await eventManagerContract.methods
+      .getEventAttendeesCountById(id)
+      .call()
+    return result
+  }
+
+  const getEventAttendeeList = async (id: string): Promise<Attendee[]> => {
     if (!accounts || !eventManagerContract) return []
     const attendees = await eventManagerContract.methods
       .getEventAttendeesById(id)
       .call()
     const parsedAttendees = attendees.map(parseAttendee)
     return parsedAttendees
+  }
+
+  const getIsInTheEvent = async (id: string): Promise<boolean> => {
+    if (!accounts || !eventManagerContract) return false
+    const result = await eventManagerContract.methods
+      .getIsInTheEventById(id)
+      .call({ from: selectedAccount })
+    return result
   }
 
   const getEventFee = async (id: string): Promise<number> => {
@@ -62,23 +82,25 @@ export const [UseEventProvider, useEvent] = constate(() => {
     const event = await eventManagerContract.methods.getAllEvent().call()
     const parsedEvents: Event[] = event.map(parseEvent)
 
-    const withAttendee = await Promise.all(
+    const withAtt = await Promise.all(
       parsedEvents.map(async (event) => {
-        const attendees = await getEventAttendees(event.id)
-        return { event, attendees }
+        const attendees = await getEventAttendeeCount(event.id)
+        const isInTheEvent = await getIsInTheEvent(event.id)
+        return { event, attendees, isInTheEvent }
       })
     )
 
-    setEvents(withAttendee)
+    setEvents(withAtt)
   }
 
   const getEvent = async (id: string): Promise<EventListItem | null> => {
     if (!accounts || !eventManagerContract) return null
     const event = await eventManagerContract.methods.getEventById(id).call()
     const parsedEvent = parseEvent(event)
-    const attendees = await getEventAttendees(id)
+    const attendees = await getEventAttendeeCount(id)
+    const isInTheEvent = await getIsInTheEvent(event.id)
 
-    return { event: parsedEvent, attendees }
+    return { event: parsedEvent, attendees, isInTheEvent }
   }
 
   useInterval(
@@ -187,5 +209,6 @@ export const [UseEventProvider, useEvent] = constate(() => {
     joinEvent,
     leaveEvent,
     claimEvent,
+    getEventAttendeeList,
   }
 })
