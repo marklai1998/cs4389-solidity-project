@@ -159,7 +159,11 @@ export const [UseEventProvider, useEvent] = constate(() => {
       .createEvent(id, name, description, date, dueDate, headcount, fee)
       .send({ from: selectedAccount, gas: 6721975 })
 
-    if (result === false) message.error('Event already exist!')
+    if (result) {
+      message.error('Create successfully')
+    } else {
+      message.error('Event already exist')
+    }
 
     refreshEvents()
   }
