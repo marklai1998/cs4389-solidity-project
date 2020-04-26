@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useEvent, Event } from '../../hooks/useEvent'
+import { useEvent, EventListItem } from '../../hooks/useEvent'
 import styled from 'styled-components'
 import { Item } from './Item'
 import { Scrollbars } from 'react-custom-scrollbars'
@@ -17,17 +17,23 @@ export const Drawer = () => {
   const { events } = useEvent()
   const [sortBy, setSortBy] = useState(sortType.ASC)
 
-  const sortedEvents = R.compose<Event[], Event[], Event[]>(
-    R.sort(({ startDate: startA }, { startDate: startB }) => {
-      const momentA = moment(startA)
-      const result =
-        sortBy === sortType.ASC
-          ? momentA.isAfter(startB)
-          : momentA.isBefore(startB)
+  const sortedEvents = R.compose<
+    EventListItem[],
+    EventListItem[],
+    EventListItem[]
+  >(
+    R.sort(
+      ({ event: { startDate: startA } }, { event: { startDate: startB } }) => {
+        const momentA = moment(startA)
+        const result =
+          sortBy === sortType.ASC
+            ? momentA.isAfter(startB)
+            : momentA.isBefore(startB)
 
-      return result ? 1 : -1
-    }),
-    R.reject(({ endDate }) => moment(endDate).isBefore(moment()))
+        return result ? 1 : -1
+      }
+    ),
+    R.reject(({ event: { startDate } }) => moment(startDate).isBefore(moment()))
   )(events)
 
   return (
@@ -45,8 +51,8 @@ export const Drawer = () => {
         Sort by time
       </Button>
       <Scrollbars universal>
-        {sortedEvents.map((event) => (
-          <Item {...event} key={event.id} />
+        {sortedEvents.map((item) => (
+          <Item {...item} key={item.event.id} />
         ))}
       </Scrollbars>
     </Wrapper>

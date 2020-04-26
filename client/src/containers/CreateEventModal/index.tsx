@@ -22,7 +22,7 @@ export const CreateEventModal = () => {
     description,
     headcount,
     fee,
-    date: [startDate, endDate],
+    date,
     dueDate,
   }: Store) => {
     if (!selectedAccount) return
@@ -30,13 +30,10 @@ export const CreateEventModal = () => {
       id: uuid(),
       name,
       description,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
+      date: date.toISOString(),
       dueDate: dueDate.toISOString(),
-      organizer: selectedAccount,
       headcount,
       fee,
-      joined: [],
     })
     setModalVisible(false)
   }
@@ -53,9 +50,7 @@ export const CreateEventModal = () => {
       <Modal
         title='Create Event'
         visible={modalVisible}
-        onOk={() => {
-          form.submit()
-        }}
+        onOk={() => form.submit()}
         onCancel={() => setModalVisible(false)}
         forceRender
       >
@@ -91,14 +86,14 @@ export const CreateEventModal = () => {
             name='date'
             rules={[{ required: true, message: 'Please input event date' }]}
           >
-            <DatePicker.RangePicker
+            <DatePicker
               showTime
               disabledDate={(date) => date.isSameOrBefore(moment())}
             />
           </Form.Item>
           <Form.Item label='Due Date' noStyle shouldUpdate>
             {({ getFieldValue }) => {
-              const eventRange = getFieldValue('date')
+              const eventDate = getFieldValue('date')
               return (
                 <Form.Item
                   label='Due Date'
@@ -110,9 +105,9 @@ export const CreateEventModal = () => {
                 >
                   <DatePicker
                     showTime
-                    disabled={!eventRange}
+                    disabled={!eventDate}
                     disabledDate={(date) =>
-                      !date.isBetween(moment(), eventRange[0])
+                      !date.isBetween(moment(), eventDate)
                     }
                   />
                 </Form.Item>

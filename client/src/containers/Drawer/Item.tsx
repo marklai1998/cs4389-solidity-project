@@ -1,16 +1,19 @@
 import React from 'react'
-import { Event, useEvent } from '../../hooks/useEvent'
+import { useEvent, EventListItem } from '../../hooks/useEvent'
 import styled from 'styled-components'
 import moment from 'moment'
 import { CalendarOutlined, UserOutlined } from '@ant-design/icons'
 
-export const Item = ({ name, startDate, joined, id }: Event) => {
-  const { viewEvent } = useEvent()
+export const Item = ({
+  event: { name, startDate, id },
+  attendees,
+}: EventListItem) => {
+  const { setSelectedEventId } = useEvent()
 
   return (
     <Wrapper
       onClick={() => {
-        viewEvent(id)
+        setSelectedEventId(id)
       }}
     >
       <Name>{name}</Name>
@@ -19,7 +22,7 @@ export const Item = ({ name, startDate, joined, id }: Event) => {
           <CalendarOutlined /> {moment(startDate).fromNow()}
         </div>
         <div>
-          <UserOutlined /> {joined.length}
+          <UserOutlined /> {attendees.length}
         </div>
       </DetailWrapper>
     </Wrapper>

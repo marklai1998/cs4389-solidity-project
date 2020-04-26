@@ -1,41 +1,191 @@
-import React from 'react'
-import { Modal } from 'antd'
-import { useEvent } from '../../hooks/useEvent'
+import React, { useState, useEffect } from 'react'
+import { Modal, Button, message } from 'antd'
+import { useEvent, EventListItem } from '../../hooks/useEvent'
 
 import * as R from 'ramda'
 import moment from 'moment'
+import { useInterval } from 'react-use'
+import { JoinEventModal, HandleJoinCallback } from './JoinEventModal'
+import { useWeb3 } from '../../hooks/useWeb3'
 
 export const ViewEventModal = () => {
-  const { selectedEvent, resetSelectedEvent, joinEvent } = useEvent()
+  const { selectedAccount } = useWeb3()
+  const {
+    selectedEventId,
+    setSelectedEventId,
+    getEvent,
+    joinEvent,
+    claimEvent,
+    leaveEvent,
+  } = useEvent()
 
-  const handleJoinEvent = () => {
-    if (!selectedEvent) return
-    joinEvent(selectedEvent.id)
+  const [eventDetail, setEventDetail] = useState<EventListItem | null>(null)
+  const [joinEventModalVisible, setJoinEventModalVisible] = useState(false)
+
+  const refreshEventDetail = async () => {
+    if (!selectedEventId) return
+    const result = await getEvent(selectedEventId)
+    setEventDetail(result)
   }
 
-  if (!selectedEvent) return <></>
-  const canJoin = moment(selectedEvent.dueDate).isAfter(moment())
+  useInterval(
+    refreshEventDetail,
+    selectedEventId ? 5000 : null // 5s
+  )
+
+  useEffect(() => {
+    if (selectedEventId) {
+      refreshEventDetail()
+    } else {
+      setEventDetail(null)
+    }
+    return () => {
+      setEventDetail(null)
+    }
+  }, [selectedEventId])
+
+  if (!selectedEventId || !eventDetail) return <></>
+  const { event, attendees } = eventDetail
+
+  const handleJoinEvent: HandleJoinCallback = ({
+    firstName,
+    lastName,
+    email,
+  }) => {
+    Modal.confirm({
+      title: `Do you want to pay ${event.fee} wai to join this event?`,
+      onOk: async () => {
+        const result = await joinEvent(eventDetail.event.id, {
+          firstName,
+          lastName,
+          email,
+        })
+        if (result) {
+          message.success('Join successfully')
+        } else {
+          message.success('Join failed')
+        }
+        setJoinEventModalVisible(false)
+        refreshEventDetail()
+      },
+      onCancel() {
+        setJoinEventModalVisible(false)
+        refreshEventDetail()
+      },
+    })
+  }
+
+  const handleClaimEvent = () => {
+    Modal.confirm({
+      title: `Do you Want to claim all attendee fee?`,
+      content: 'No one will be able to join event after you claim the fee.',
+      onOk: async () => {
+        const result = await claimEvent(eventDetail.event.id)
+        if (result) {
+          message.success('Claim successfully')
+        } else {
+          message.success('Claim failed')
+        }
+        refreshEventDetail()
+      },
+      onCancel() {
+        refreshEventDetail()
+      },
+    })
+  }
+
+  const handleLeaveEvent = () => {
+    Modal.confirm({
+      title: `Do you Want to leave the event?`,
+      content: 'Event fee will refund to your account.',
+      onOk: async () => {
+        const result = await leaveEvent(eventDetail.event.id)
+        if (result) {
+          message.success('Leave successfully')
+        } else {
+          message.success('Leave failed')
+        }
+        refreshEventDetail()
+      },
+      onCancel() {
+        refreshEventDetail()
+      },
+    })
+  }
+
+  const isOwner = event.organizer === selectedAccount
+  const canClaim = isOwner && !event.claimed
+
+  const isInTheEvent = R.any(
+    ({ buyer }) => buyer === selectedAccount,
+    attendees
+  )
+
+  const isLocked = event.claimed
+  const isDue = moment(event.dueDate).isSameOrBefore(moment())
+  const isEnd = moment(event.startDate).isSameOrBefore(moment())
+  const canJoin =
+    !isInTheEvent && !isDue && !isEnd && !isLocked && event.headcount > 0
+  const canLeave = isInTheEvent && !isDue && !isEnd && !isLocked
+
   return (
-    <Modal
-      title={selectedEvent.name}
-      visible={!R.isNil(selectedEvent)}
-      onCancel={() => resetSelectedEvent()}
-      onOk={handleJoinEvent}
-      okText='Join Event'
-      okButtonProps={{ disabled: !canJoin }}
-    >
-      <h2>Description</h2>
-      {selectedEvent.description}
-      <h2>Date</h2>
-      {selectedEvent.startDate} - {selectedEvent.endDate}
-      <h2>Due Date</h2>
-      {selectedEvent.dueDate}
-      <h2>Headcount</h2>
-      {selectedEvent.headcount}
-      <h2>Fee</h2>
-      {selectedEvent.fee} Wei
-      <h2>Joined</h2>
-      {selectedEvent.joined.length}
-    </Modal>
+    <>
+      <Modal
+        title={event.name}
+        visible={!R.isNil(eventDetail)}
+        onCancel={() => setSelectedEventId(null)}
+        footer={
+          <>
+            {isOwner ? (
+              <Button
+                type='danger'
+                disabled={!canClaim}
+                onClick={handleClaimEvent}
+              >
+                Claim Event Fee
+              </Button>
+            ) : isInTheEvent ? (
+              <Button
+                type='danger'
+                disabled={!canLeave}
+                onClick={handleLeaveEvent}
+              >
+                Leave Event
+              </Button>
+            ) : (
+              <Button
+                type='primary'
+                disabled={!canJoin}
+                onClick={() => {
+                  setJoinEventModalVisible(true)
+                }}
+              >
+                Join Event
+              </Button>
+            )}
+          </>
+        }
+      >
+        <JoinEventModal
+          visible={joinEventModalVisible}
+          closeModal={() => {
+            setJoinEventModalVisible(false)
+          }}
+          handleJoin={handleJoinEvent}
+        />
+        <h2>Description</h2>
+        {event.description}
+        <h2>Date</h2>
+        {event.startDate}
+        <h2>Due Date</h2>
+        {event.dueDate}
+        <h2>Headcount</h2>
+        {event.headcount}
+        <h2>Fee</h2>
+        {event.fee} Wei
+        <h2>Joined</h2>
+        {attendees.length}
+      </Modal>
+    </>
   )
 }

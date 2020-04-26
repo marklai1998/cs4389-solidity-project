@@ -1,190 +1,84 @@
+import { AbiItem } from 'web3-utils'
+import { Contract } from 'web3-eth-contract'
 import { useState, useEffect } from 'react'
 import constate from 'constate'
-// import { useWeb3 } from './useWeb3'
+import { useWeb3 } from './useWeb3'
 import { useInterval } from 'react-use'
-import moment from 'moment'
-import { v4 as uuid } from 'uuid'
 import * as R from 'ramda'
+import EventManagerContract from '../contracts/EventManager.json'
+import { Event } from '../types/Event'
+import { message } from 'antd'
+import { Attendee } from '../types/Attendee'
 
-export type Event = {
-  id: string
-  name: string
-  description: string
-  startDate: string
-  endDate: string
-  dueDate: string
-  organizer: string
-  headcount: number
-  fee: number
-  joined: Attendee[]
-}
+const parseEvent = (item: any): Event => ({
+  organizer: R.prop('organizer', item),
+  id: R.prop('id', item),
+  name: R.prop('name', item),
+  description: R.prop('description', item),
+  startDate: R.prop('startDate', item),
+  dueDate: R.prop('dueDate', item),
+  headcount: R.prop('headcount', item),
+  fee: R.prop('fee', item),
+  claimed: R.prop('claimed', item),
+})
 
-export type Attendee = {
-  account: string
-  firstName: string
-  lastName: string
-  email: string
-}
+const parseAttendee = (item: any): Attendee => ({
+  buyer: R.prop('buyer', item),
+  firstName: R.prop('firstName', item),
+  lastName: R.prop('lastName', item),
+  email: R.prop('email', item),
+})
 
-const MockedData: Event[] = [
-  {
-    id: uuid(),
-    name: 'test event1',
-    description: '',
-    startDate: moment().add('day', 1).toISOString(),
-    endDate: moment().add('day', 1).toISOString(),
-    dueDate: moment().add('day', 1).toISOString(),
-    organizer: 'someAddress',
-    headcount: 10,
-    fee: 10,
-    joined: [
-      {
-        account: 'someAddress',
-        firstName: 'mark',
-        lastName: 'lai',
-        email: 'a@a.com',
-      },
-      {
-        account: 'someAddress',
-        firstName: 'ivan',
-        lastName: 'Lau',
-        email: 'a@a.com',
-      },
-    ],
-  },
-  {
-    id: uuid(),
-    name: 'test event1',
-    description: '',
-    startDate: moment().add('day', 1).toISOString(),
-    endDate: moment().add('day', 1).toISOString(),
-    dueDate: moment().add('day', 1).toISOString(),
-    organizer: 'someAddress',
-    headcount: 10,
-    fee: 10,
-    joined: [
-      {
-        account: 'someAddress',
-        firstName: 'mark',
-        lastName: 'lai',
-        email: 'a@a.com',
-      },
-      {
-        account: 'someAddress',
-        firstName: 'ivan',
-        lastName: 'Lau',
-        email: 'a@a.com',
-      },
-    ],
-  },
-  {
-    id: uuid(),
-    name: 'test event1',
-    description: '',
-    startDate: moment().add('day', 1).toISOString(),
-    endDate: moment().add('day', 1).toISOString(),
-    dueDate: moment().add('day', 1).toISOString(),
-    organizer: 'someAddress',
-    headcount: 10,
-    fee: 10,
-    joined: [
-      {
-        account: 'someAddress',
-        firstName: 'mark',
-        lastName: 'lai',
-        email: 'a@a.com',
-      },
-      {
-        account: 'someAddress',
-        firstName: 'ivan',
-        lastName: 'Lau',
-        email: 'a@a.com',
-      },
-    ],
-  },
-  {
-    id: uuid(),
-    name: 'test event1',
-    description: '',
-    startDate: moment().add('day', 1).toISOString(),
-    endDate: moment().add('day', 1).toISOString(),
-    dueDate: moment().add('day', 1).toISOString(),
-    organizer: 'someAddress',
-    headcount: 10,
-    fee: 10,
-    joined: [
-      {
-        account: 'someAddress',
-        firstName: 'mark',
-        lastName: 'lai',
-        email: 'a@a.com',
-      },
-      {
-        account: 'someAddress',
-        firstName: 'ivan',
-        lastName: 'Lau',
-        email: 'a@a.com',
-      },
-    ],
-  },
-  {
-    id: uuid(),
-    name: 'test event1',
-    description: '',
-    startDate: moment().add('day', 1).toISOString(),
-    endDate: moment().add('day', 1).toISOString(),
-    dueDate: moment().add('day', 1).toISOString(),
-    organizer: 'someAddress',
-    headcount: 10,
-    fee: 10,
-    joined: [
-      {
-        account: 'someAddress',
-        firstName: 'mark',
-        lastName: 'lai',
-        email: 'a@a.com',
-      },
-      {
-        account: 'someAddress',
-        firstName: 'ivan',
-        lastName: 'Lau',
-        email: 'a@a.com',
-      },
-    ],
-  },
-]
+export type EventListItem = { event: Event; attendees: Attendee[] }
 
 export const [UseEventProvider, useEvent] = constate(() => {
-  // const { web3 } = useWeb3()
-  const [events, setEvents] = useState<Event[]>([])
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
+  const { web3, accounts, selectedAccount } = useWeb3()
+  const [
+    eventManagerContract,
+    setEventManagerContract,
+  ] = useState<Contract | null>(null)
+
+  const [events, setEvents] = useState<EventListItem[]>([])
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
+
+  const getEventAttendees = async (id: string): Promise<Attendee[]> => {
+    if (!accounts || !eventManagerContract) return []
+    const attendees = await eventManagerContract.methods
+      .getEventAttendeesById(id)
+      .call()
+    const parsedAttendees = attendees.map(parseAttendee)
+    return parsedAttendees
+  }
+
+  const getEventFee = async (id: string): Promise<number> => {
+    if (!accounts || !eventManagerContract) return 0
+    const fee = await eventManagerContract.methods.getEventFeeById(id).call()
+    return fee
+  }
 
   const refreshEvents = async () => {
-    // TODO: get all event from contract
-    setEvents(MockedData)
+    if (!accounts || !eventManagerContract) return
+
+    const event = await eventManagerContract.methods.getAllEvent().call()
+    const parsedEvents: Event[] = event.map(parseEvent)
+
+    const withAttendee = await Promise.all(
+      parsedEvents.map(async (event) => {
+        const attendees = await getEventAttendees(event.id)
+        return { event, attendees }
+      })
+    )
+
+    setEvents(withAttendee)
   }
 
-  const createEvent = (event: Event) => {
-    console.log(event)
-    // TODO: save event
-  }
+  const getEvent = async (id: string): Promise<EventListItem | null> => {
+    if (!accounts || !eventManagerContract) return null
+    const event = await eventManagerContract.methods.getEventById(id).call()
+    const parsedEvent = parseEvent(event)
+    const attendees = await getEventAttendees(id)
 
-  const viewEvent = (id: string) => {
-    // TODO: save event
-    const result = R.find(R.propEq('id', id), events)
-    if (!result) return
-    setSelectedEvent(result)
-  }
-
-  const joinEvent = (id: string) => {
-    // TODO: save event
-    const result = R.find(R.propEq('id', id), events)
-    if (!result) return
-    setSelectedEvent(result)
-  }
-
-  const resetSelectedEvent = () => {
-    setSelectedEvent(null)
+    return { event: parsedEvent, attendees }
   }
 
   useInterval(
@@ -196,14 +90,102 @@ export const [UseEventProvider, useEvent] = constate(() => {
 
   useEffect(() => {
     refreshEvents()
-  }, [])
+  }, [eventManagerContract])
+
+  useEffect(() => {
+    const initEventManagerContract = async () => {
+      if (!web3) return
+      try {
+        // Get the contract instance.
+        const networkId = await web3.eth.net.getId()
+        const deployedNetwork = (EventManagerContract as any).networks[
+          networkId
+        ]
+        const instance = new web3.eth.Contract(
+          EventManagerContract.abi as AbiItem[],
+          deployedNetwork && deployedNetwork.address
+        )
+        setEventManagerContract(instance)
+      } catch (error) {
+        // Catch any errors for any of the above operations.
+        alert(`Failed to load accounts or contract. Check console for details.`)
+        console.error(error)
+      }
+    }
+    initEventManagerContract()
+  }, [web3, accounts])
+
+  const createEvent = async ({
+    id,
+    name,
+    description,
+    date,
+    dueDate,
+    headcount,
+    fee,
+  }: {
+    name: string
+    id: string
+    description: string
+    date: string
+    dueDate: string
+    headcount: number
+    fee: number
+  }) => {
+    if (!accounts || !eventManagerContract || !selectedAccount) return
+    const result = await eventManagerContract.methods
+      .createEvent(id, name, description, date, dueDate, headcount, fee)
+      .send({ from: selectedAccount, gas: 6721975 })
+
+    if (result === false) message.error('Event already exist!')
+
+    refreshEvents()
+  }
+
+  const joinEvent = async (
+    id: string,
+    {
+      firstName,
+      lastName,
+      email,
+    }: { firstName: string; lastName: string; email: string }
+  ) => {
+    if (!accounts || !eventManagerContract || !selectedAccount) return
+    const eventFee = await getEventFee(id)
+
+    const result = await eventManagerContract.methods
+      .joinEvent(id, firstName, lastName, email)
+      .send({ from: selectedAccount, gas: 6721975, value: eventFee })
+
+    return result
+  }
+
+  const leaveEvent = async (id: string) => {
+    if (!accounts || !eventManagerContract || !selectedAccount) return
+    const result = await eventManagerContract.methods
+      .leaveEvent(id)
+      .send({ from: selectedAccount, gas: 6721975 })
+
+    return result
+  }
+
+  const claimEvent = async (id: string) => {
+    if (!accounts || !eventManagerContract || !selectedAccount) return
+    const result = await eventManagerContract.methods
+      .claimEvent(id)
+      .send({ from: selectedAccount, gas: 6721975 })
+
+    return result
+  }
 
   return {
     events,
     createEvent,
-    viewEvent,
-    selectedEvent,
-    resetSelectedEvent,
+    getEvent,
+    setSelectedEventId,
+    selectedEventId,
     joinEvent,
+    leaveEvent,
+    claimEvent,
   }
 })

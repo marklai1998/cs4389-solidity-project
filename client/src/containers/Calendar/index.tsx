@@ -8,32 +8,24 @@ import * as R from 'ramda'
 import { CreateEventModal } from '../CreateEventModal'
 
 export const Calendar = () => {
-  const { events, viewEvent } = useEvent()
+  const { events, setSelectedEventId } = useEvent()
 
   const dateCellRender = (value: moment.Moment) => {
-    const items = R.filter(({ startDate, endDate }) => {
-      const startMoment = moment(startDate)
-      const endMoment = moment(endDate)
-      const year = value.year()
-      const dayOfYear = value.dayOfYear()
-      return (
-        startMoment.dayOfYear() <= dayOfYear &&
-        endMoment.dayOfYear() >= dayOfYear &&
-        startMoment.year() <= year &&
-        endMoment.year() >= year
-      )
-    }, events)
+    const items = R.filter(
+      ({ event: { startDate } }) => moment(startDate).isSame(value, 'day'),
+      events
+    )
     return R.isEmpty(items) ? (
       <></>
     ) : (
       <Dropdown
         overlay={
           <Menu>
-            {items.map(({ name, id }) => (
+            {items.map(({ event: { name, id } }) => (
               <Menu.Item
                 key={id}
                 onClick={() => {
-                  viewEvent(id)
+                  setSelectedEventId(id)
                 }}
               >
                 {name}
