@@ -182,9 +182,9 @@ export const ViewEventModal = () => {
         <h2>Description</h2>
         {event.description}
         <h2>Date</h2>
-        {event.startDate}
+        {moment(event.startDate).format('MMMM Do YYYY, h:mm:ss a')}
         <h2>Due Date</h2>
-        {event.dueDate}
+        {moment(event.dueDate).format('MMMM Do YYYY, h:mm:ss a')}
         <h2>Headcount</h2>
         {event.headcount}
         <h2>Fee</h2>
