@@ -141,7 +141,7 @@ contract EventManager {
     }
 
     function getEventOwnerById(string memory _id)
-        public
+        private
         view
         returns (address payable)
     {
